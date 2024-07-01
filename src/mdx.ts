@@ -17,6 +17,7 @@ import getAppRegistry from './build/appRegistry';
 import getPackageRegistry from './build/packageRegistry';
 import {apiCategories} from './build/resolveOpenAPI';
 import getAllFilesRecursively from './files';
+import rehypeOnboardingLines from './rehype-onboarding-lines';
 import remarkCodeTabs from './remark-code-tabs';
 import remarkCodeTitles from './remark-code-title';
 import remarkComponentSpacing from './remark-component-spacing';
@@ -95,8 +96,8 @@ async function getDocsFrontMatterUncached(): Promise<FrontMatter[]> {
   return frontMatter;
 }
 
-export function getAllFilesFrontMatter(folder: string = 'docs') {
-  const docsPath = path.join(root, folder);
+function getAllFilesFrontMatter() {
+  const docsPath = path.join(root, 'docs');
   const files = getAllFilesRecursively(docsPath);
   const allFrontMatter: FrontMatter[] = [];
   files.forEach(file => {
@@ -114,14 +115,9 @@ export function getAllFilesFrontMatter(folder: string = 'docs') {
     allFrontMatter.push({
       ...(frontmatter as FrontMatter),
       slug: formatSlug(fileName),
-      sourcePath: path.join(folder, fileName),
+      sourcePath: path.join('docs', fileName),
     });
   });
-
-  if (folder !== 'docs') {
-    // We exit early if we're not in the docs folder. We use this for the changelog.
-    return allFrontMatter;
-  }
 
   // Add all `common` files in the right place.
   const platformsPath = path.join(docsPath, 'platforms');
@@ -333,6 +329,7 @@ export async function getFileBySlug(slug: string) {
           },
         ],
         [rehypePrismPlus, {ignoreMissing: true}],
+        rehypeOnboardingLines,
         [rehypePrismDiff, {remove: true}],
         rehypePresetMinify,
       ];
